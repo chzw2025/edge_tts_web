@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edge-TTS 语音合成</title>
+  <style>
+    :root {
+      --primary-color: #4361ee;
+      --secondary-color: #3f37c9;
+      --light-color: #f8f9fa;
+      --dark-color: #212529;
+      --success-color: #4bb543;
+      --border-radius: 8px;
+      --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+    }
+    
+    body {
+      font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      line-height: 1.6;
+      color: var(--dark-color);
+      background-color: #f5f7fa;
+      margin: 0;
+      padding: 2rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    h2 {
+      color: var(--primary-color);
+      text-align: center;
+      margin-bottom: 2rem;
+      font-weight: 600;
+    }
+    
+    .container {
+      background-color: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--dark-color);
+    }
+    
+    textarea {
+      width: 100%;
+      padding: 1rem;
+      border: 1px solid #ddd;
+      border-radius: var(--border-radius);
+      font-family: inherit;
+      font-size: 1rem;
+      resize: none; /* 禁用用户手动调整大小 */
+      min-height: 150px; /* 增加初始高度 */
+      max-height: 400px; /* 设置最大高度 */
+      overflow-y: auto; /* 内容超过最大高度时显示滚动条 */
+      transition: var(--transition);
+      box-sizing: border-box;
+      line-height: 1.5;
+    }
+    
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+    }
+    
+    select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      background-color: white;
+      cursor: pointer;
+      transition: var(--transition);
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      background-size: 1rem;
+    }
+    
+    select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+    }
+    
+    button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 500;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: var(--transition);
+      width: 100%;
+      display: block;
+    }
+    
+    button:hover {
+      background-color: var(--secondary-color);
+      transform: translateY(-1px);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    #status {
+      margin: 1rem 0;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #666;
+      min-height: 1.5rem;
+    }
+    
+    #player {
+      width: 100%;
+      margin-top: 1rem;
+      border-radius: var(--border-radius);
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    @media (min-width: 768px) {
+      body {
+        padding: 3rem;
+      }
+      
+      button {
+        width: auto;
+        margin: 0 auto;
+        padding: 0.75rem 2.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>文本转语音（可选语音）</h2>
+    
+    <div class="form-group">
+      <label for="text">输入文本：</label>
+      <textarea id="text" placeholder="请输入要转换为语音的文本...">你好，我係人工智能助手。</textarea>
+    </div>
+    
+    <div class="form-group">
+      <label for="voice">选择语音：</label>
+      <select id="voice">
+        <option value="zh-HK-HiuMaanNeural">HiuMaan（粤语女声1）</option>
+        <option value="zh-HK-HiuGaaiNeural">HiuGaai（粤语女声2）</option>
+        <option value="zh-HK-WanLungNeural">WanLung（粤语男声）</option>
+        <option value="zh-CN-XiaoxiaoNeural">Xiaoxiao（女，温柔）</option>
+        <option value="zh-CN-XiaoyiNeural">Xiaoyi（女，活泼）</option>
+        <option value="zh-CN-YunjianNeural">Yunjian（男，热情）</option>
+        <option value="zh-CN-YunxiNeural">Yunxi（男，阳光）</option>
+        <option value="zh-CN-YunxiaNeural">Yunxia（男，可爱）</option>
+        <option value="zh-CN-YunyangNeural">Yunyang（男，专业）</option>
+        <option value="zh-CN-liaoning-XiaobeiNeural">Xiaobei（辽宁方言，女）</option>
+        <option value="zh-CN-shaanxi-XiaoniNeural">Xiaoni（陕西方言，女）</option>
+        <option value="en-US-JennyNeural">Jenny（英文女声）</option>
+      </select>
+    </div>
+    
+    <button onclick="sendText()">生成语音</button>
+    <p id="status"></p>
+    <audio id="player" controls style="display:none;"></audio>
+  </div>
+
+  <script>
+    // 自动调整文本区域高度
+    function adjustTextareaHeight(textarea) {
+      textarea.style.height = 'auto'; // 先重置高度
+      textarea.style.height = (textarea.scrollHeight) + 'px';
+    }
+    
+    // 初始化时调整高度
+    const textarea = document.getElementById('text');
+    adjustTextareaHeight(textarea);
+    
+    // 输入时自动调整高度
+    textarea.addEventListener('input', function() {
+      adjustTextareaHeight(this);
+    });
+    
+    function sendText() {
+      const text = document.getElementById("text").value;
+      const voice = document.getElementById("voice").value;
+      document.getElementById("status").innerText = "生成中…";
+
+      fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, voice })  // ✅ 传送语音参数
+      })
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById("status").innerText = "生成成功！";
+        const audio = document.getElementById("player");
+        audio.src = data.path + "?t=" + Date.now();  // 防缓存
+        audio.style.display = "block";
+        audio.play();
+      })
+      .catch(err => {
+        document.getElementById("status").innerText = "出错：" + err;
+      });
+    }
+  </script>
+</body>
+</html>
